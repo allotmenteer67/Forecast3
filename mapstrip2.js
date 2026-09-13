@@ -13,7 +13,14 @@ function mapStripDiag(text, colour) {
     if (!log) {
       log = document.createElement("div");
       log.id = "__mapStripDiagLog";
-      log.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999999;font-family:monospace;font-size:13px;max-height:60vh;overflow-y:auto;";
+      // top uses env(safe-area-inset-top) — this app deliberately draws
+      // its own content underneath the iPhone notch/status bar
+      // (viewport-fit=cover, see index.html's own head comment), so a
+      // plain top:0 here would land the banner in that same strip,
+      // potentially hidden behind the clock/battery icons rather than
+      // genuinely invisible. Pushing below the safe area guarantees
+      // it's inside the app's own visible content region instead.
+      log.style.cssText = "position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:999999;font-family:monospace;font-size:15px;max-height:60vh;overflow-y:auto;";
       (document.body || document.documentElement).appendChild(log);
     }
     const line = document.createElement("div");
@@ -35,6 +42,13 @@ function mapStripDiag(text, colour) {
 // browser to refuse to execute it, etc.), not anything about canvas,
 // SVG, or any of the drawing logic this whole file otherwise contains.
 mapStripDiag("1. map-strip.js: file started executing", "#00ffff");
+// Redundant on purpose — alert() is proven reliable (confirmed twice
+// tonight via inline checkpoints), while the banner above is new and
+// unproven. Belt and braces: if the banner is somehow still not
+// visible for any reason (a CSS/rendering issue, not a script one),
+// this fires regardless and definitively separates "did the script
+// run" from "is the banner rendering correctly".
+alert("map-strip.js started executing (backup check)");
 
 // TEMPORARY diagnostic — a global catch-all for ANY uncaught error on
 // this page, not just inside this file's own functions. renderMapStrip
