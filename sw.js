@@ -296,7 +296,7 @@
 // already had, so a tap on either button can't be misread as a swipe
 // gesture starting there. index.html, style.css, app.js, fishing.js,
 // fishing-ui.js and tide-ui.js are all in SHELL_FILES.
-const CACHE_NAME = "cloude-shell-v51";
+const CACHE_NAME = "cloude-shell-v52";
 const SHELL_FILES = [
   "index.html",
   "compare.html",
@@ -312,7 +312,7 @@ const SHELL_FILES = [
   // afterthought.
   "map.html",
   "map.js",
-  "mapstrip2.js",
+  "mapstrip3.js",
   "app.js",
   "settings.js",
   "solar.js",

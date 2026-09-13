@@ -61,20 +61,19 @@
 
     <!-- Static preview, not a mini pannable map — tap opens map.html for
          real interaction. Centred on wherever the front page is
-         currently showing, 25km fixed radius, rain only (wind/pressure/
-         temperature stay on the full map page — this is "is it raining
-         nearby", not the full picture). See map-strip.js.
+         currently showing. See mapstrip3.js.
 
-         Was a <canvas>, now an <svg> — see map-strip.js's own file-level
-         comment for the full reasoning (a real, evidence-led bug: the
-         strip going permanently blank after returning from the full map
-         or Settings, traced to iOS not reliably compositing a live
-         canvas's content across that particular transition). SVG has no
-         separate bitmap to lose sync with, so that whole category of
-         bug has nothing left to hide in. viewBox is set/kept up to date
-         by map-strip.js's own sizeMapStripSvg(), not hard-coded here. -->
+         Rebuilt from scratch — two previous versions (a <canvas>, then
+         an <svg>) both went permanently blank after certain page
+         transitions, for a reason an extended, evidence-led debugging
+         session was never able to pin down (every standard diagnostic —
+         thrown errors, page-lifecycle events, even plain alert() —
+         stopped producing any signal at all partway through, on a
+         brand new repo, ruling out caching/deployment as the cause).
+         Starting genuinely clean rather than layering another fix on
+         top of two already-mysterious failures. -->
     <a href="map.html" class="map-strip" aria-label="Open the map">
-      <svg id="mapStripCanvas" viewBox="0 0 300 150"></svg>
+      <div id="mapStripRoot" class="map-strip-root">Loading map…</div>
     </a>
 
     <section class="headline">
@@ -170,7 +169,7 @@
   </section>
 
   <script src="app.js"></script>
-  <script src="mapstrip2.js"></script>
+  <script src="mapstrip3.js"></script>
   <script src="tide.js"></script>
   <script src="tide-ui.js"></script>
   <script src="fishing.js"></script>
