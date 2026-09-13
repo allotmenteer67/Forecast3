@@ -1,12 +1,40 @@
+// TEMPORARY diagnostic infrastructure — a persistent, stacking banner
+// pinned to the top of the page, replacing every alert() this file was
+// using. A blocking alert proved too easy to dismiss on reflex after a
+// long night of tapping through many of them, with no way afterwards
+// to know for certain whether one had appeared and simply been missed.
+// This instead builds a visible, permanent, readable log at the top of
+// the screen — nothing to dismiss, nothing blocking, no time pressure,
+// and every entry stays on screen alongside every other one so the
+// whole sequence can be read (or screenshotted) at leisure.
+function mapStripDiag(text, colour) {
+  try {
+    let log = document.getElementById("__mapStripDiagLog");
+    if (!log) {
+      log = document.createElement("div");
+      log.id = "__mapStripDiagLog";
+      log.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:999999;font-family:monospace;font-size:13px;max-height:60vh;overflow-y:auto;";
+      (document.body || document.documentElement).appendChild(log);
+    }
+    const line = document.createElement("div");
+    line.textContent = text;
+    line.style.cssText = "background:" + (colour || "#ff00ff") + ";color:#000;padding:8px 10px;border-bottom:1px solid #000;font-weight:bold;";
+    log.appendChild(line);
+  } catch {
+    // If even this fails, there's genuinely nothing more this file can
+    // do to make itself visible.
+  }
+}
+
 // TEMPORARY diagnostic — the single simplest possible check: does this
 // file even start executing at all on this page? Placed as the
 // literal first statement, before anything else (even the global
-// error handlers just below) — if this alert never appears on a fresh
+// error handlers just below) — if this never appears on a fresh
 // launch, map-strip.js itself isn't running, which is a script-loading
 // problem (wrong path, blocked request, wrong MIME type causing the
 // browser to refuse to execute it, etc.), not anything about canvas,
 // SVG, or any of the drawing logic this whole file otherwise contains.
-alert("map-strip.js: file started executing");
+mapStripDiag("1. map-strip.js: file started executing", "#00ffff");
 
 // TEMPORARY diagnostic — a global catch-all for ANY uncaught error on
 // this page, not just inside this file's own functions. renderMapStrip
@@ -20,16 +48,10 @@ alert("map-strip.js: file started executing");
 // in a way that matters, this will surface it directly rather than it
 // vanishing with no console to see it on.
 window.addEventListener("error", e => {
-  if (!window.__mapStripGlobalErrorShown) {
-    window.__mapStripGlobalErrorShown = true;
-    alert("Page error: " + e.message + " at " + e.filename + ":" + e.lineno);
-  }
+  mapStripDiag("ERROR: " + e.message + " at " + e.filename + ":" + e.lineno, "#ff4444");
 });
 window.addEventListener("unhandledrejection", e => {
-  if (!window.__mapStripGlobalRejectionShown) {
-    window.__mapStripGlobalRejectionShown = true;
-    alert("Unhandled rejection: " + (e.reason && e.reason.stack || e.reason));
-  }
+  mapStripDiag("REJECTION: " + (e.reason && e.reason.stack || e.reason), "#ff4444");
 });
 
 // TEMPORARY diagnostic — fires once, the moment map-strip.js's own
@@ -423,10 +445,7 @@ async function renderMapStrip(centre, grid) {
   try {
     await renderMapStripInner(centre, grid);
   } catch (err) {
-    if (!window.__mapStripErrorShown) {
-      window.__mapStripErrorShown = true;
-      alert("renderMapStrip threw: " + (err && err.stack || err));
-    }
+    mapStripDiag("2b. renderMapStrip THREW: " + (err && err.stack || err), "#ff4444");
   }
 }
 
@@ -543,7 +562,7 @@ async function renderMapStripInner(centre, grid) {
   // CSS/layout issue instead of a script one.
   if (!window.__mapStripAlertShown) {
     window.__mapStripAlertShown = true;
-    alert("renderMapStrip ran — viewBox=" + mapStripCanvas.getAttribute("viewBox") + " childCount=" + mapStripCanvas.children.length + " rectW=" + Math.round(mapStripCanvas.getBoundingClientRect().width) + " rectH=" + Math.round(mapStripCanvas.getBoundingClientRect().height));
+    mapStripDiag("2c. renderMapStrip completed — viewBox=" + mapStripCanvas.getAttribute("viewBox") + " childCount=" + mapStripCanvas.children.length + " rectW=" + Math.round(mapStripCanvas.getBoundingClientRect().width) + " rectH=" + Math.round(mapStripCanvas.getBoundingClientRect().height), "#00ff00");
   }
 
   // Bottom-right time pill, matching the full map's own version in
@@ -717,7 +736,7 @@ async function initMapStrip(centre) {
     // a plain missing-file case) happening in here on the real device.
     if (!window.__mapStripFetchErrorShown) {
       window.__mapStripFetchErrorShown = true;
-      alert("Map strip data-fetch block threw: " + (err && err.stack || err));
+      mapStripDiag("1b. Data-fetch block threw: " + (err && err.stack || err), "#ff4444");
     }
   }
   if (myGeneration !== mapStripGeneration) return;
@@ -747,11 +766,7 @@ async function initMapStrip(centre) {
 window.__mapStripListenerRegistering = "reached, about to register";
 
 document.addEventListener("cloude:location-ready", e => {
-  // TEMPORARY diagnostic — proves the event was both dispatched AND
-  // received. If this never appears, app.js either never dispatches
-  // cloude:location-ready at all on this load, or dispatches it before
-  // this listener was registered (a genuine race, not yet ruled out).
-  alert("map-strip: cloude:location-ready received, lat=" + e.detail.lat + " lon=" + e.detail.lon);
+  mapStripDiag("2. cloude:location-ready RECEIVED at " + new Date().toLocaleTimeString() + " lat=" + e.detail.lat, "#ff00ff");
   initMapStrip({ lat: e.detail.lat, lon: e.detail.lon });
 });
 
